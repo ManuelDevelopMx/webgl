@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detectar Tipos de Mosquito IA Avanzada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        video {
+            width: 60%;
+            height: auto;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        p {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Detectar Tipos de Mosquito IA Avanzada</h1>
+    <video id="webcam" autoplay playsinline></video>
+    <button id="capture-button">Encender Camara y Analizar</button>
+    <p id="result"></p>
+
+    <!-- Cargar TensorFlow.js desde la CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <!-- Cargar el modelo preentrenado MobileNet desde la CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <!-- Script personalizado -->
+    <script>
+        let net;
+
+        async function loadModel() {
+            // Cargar el modelo MobileNet preentrenado desde la CDN
+            net = await mobilenet.load();
+            console.log('Modelo cargado exitosamente');
+        }
+
+        async function setupWebcam() {
+            const webcamElement = document.getElementById('webcam');
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { exact: "environment" }  // Solicita la cámara trasera
+                }
+            });
+            webcamElement.srcObject = stream;
+            return new Promise((resolve) => {
+                webcamElement.onloadedmetadata = () => {
+                    resolve();
+                };
+            });
+        }
+
+        async function identifyImage() {
+            const webcamElement = document.getElementById('webcam');
+            const resultElement = document.getElementById('result');
+
+            // Capturar la imagen del video y hacer la predicción
+            const result = await net.classify(webcamElement);
+            console.log(result);
+
+            // Mostrar la predicción en la página
+            resultElement.innerText = `Prediction: ${result[0].className}\nProbability: ${(result[0].probability * 100).toFixed(2)}%`;
+        }
+
+        document.getElementById('capture-button').addEventListener('click', identifyImage);
+
+        // Cargar el modelo y configurar la cámara cuando la página se cargue
+        window.onload = async () => {
+            await loadModel();
+            await setupWebcam();
+        };
+    </script>
+</body>
+</html>
